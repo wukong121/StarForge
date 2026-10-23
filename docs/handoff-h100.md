@@ -5,8 +5,8 @@
 
 ## 最新 Linux 进度
 
-- 起点版本 `4027240`；新增 Task 0 代码与工程工具链在工作区，未提交。
-  Git 作者 name/email 未配置，不代替用户设置身份或推送。
+- 起点版本 `4027240`；Task 0 实现与工程工具链已独立提交为 `8299994`。
+  用户确认沿用已有作者身份，仅配置当前仓库，没有修改全局 Git 设置。
 - 已实现 `runtime.host.probe_host()`，`doctor` 保留旧字段并新增分状态主机诊断。
   覆盖 cgroup v2 父级限额、CPU affinity、内存/磁盘和有超时的外部工具查询。
 - 使用 uv 0.13.5/锁文件、Hatchling、Ruff、mypy；标准库 CLI 和无依赖安装保留。
@@ -26,8 +26,8 @@
   安装验证通过；`runs/task0-final-20261023T075708Z/` 的完整 synthetic smoke
   与基线 checkpoint 字节 hash 一致，不代表真实星际技能。
 
-下一步：**Task 1 的真实资产与 ABI 兼容构建通路核实**。Task 0 的提交项待用户 Git
-作者身份配置；游戏缺失不妨碍随后推进独立协议/runner fixture/PPO 数学测试。
+下一步：**Task 1 的真实资产与 ABI 兼容构建通路核实**。Task 0 的实现、验证与提交
+已完成；游戏缺失不妨碍随后推进独立协议/runner fixture/PPO 数学测试。
 
 ## 用户意图
 
@@ -80,8 +80,9 @@
 
 ## 搬运与 Git
 
-当前 Linux checkout 已有 `main` 和初始提交 `4027240`，工作区新增 Task 0 改动。
-实际 origin fetch/push 都使用用户指定的 SSH URL；本轮未访问远端 refs 或推送。
+当前 Linux checkout 的 Task 0 实现提交是 `8299994`，基线为 `4027240`。
+实际 origin fetch/push 都使用用户指定的 SSH URL；发布前 SSH 查询成功，
+远端 main 为 `4027240`。用户已授权本次提交与正常 push，发布结果以实际 refs 为准。
 下述 Windows 发布过程仅保留为历史，不代表当前远端配置。
 
 用户已指定远端：`git@github.com:wukong121/StarForge.git`，
@@ -134,7 +135,7 @@ python3 -m starforge smoke --out "runs/handoff-$(date -u +%Y%m%dT%H%M%SZ)"
 
 1. 读 [架构设计](superpowers/specs/2026-10-23-h100-architecture-design.md)。
 2. 按 [实施计划](superpowers/plans/2026-10-23-h100-development.md) 查看 Task 0 已记录证据，
-   处理未提交状态后从 Task 1 继续；不要重复安装或覆盖已存在的本地运行目录。
+   从 Task 1 继续；先核实实际 Git 状态，不要重复安装或覆盖已存在的本地运行目录。
 3. 下一目标：确认实际游戏/SDK 资产，解决可复现的 Win32 DLL 构建与 Wine/BWAPI Example 运行。
 4. 随后交付一场有回放的 StarForge 真实对局，再做 20 局自动重开。
 5. 第一个 GPU 目标是小型 masked PPO 正确性及真实轨迹更新；不是立刻训练 315M 网络。
@@ -151,5 +152,5 @@ python3 -m starforge smoke --out "runs/handoff-$(date -u +%Y%m%dT%H%M%SZ)"
 - 当前阻塞的准确环节及还能推进的工作。
 
 当前下一任务：**Task 1，游戏资产与 MSVC-compatible x86 构建通路核实。**
-Task 0 的主机/Python 验证已完成，提交待 Git 作者身份；数据盘持久性仍 unknown。
+Task 0 的主机/Python 验证及独立提交已完成；数据盘持久性仍 unknown。
 Task 1–9 的真实游戏/学习验收尚未执行，不能用 Python 测试替代。

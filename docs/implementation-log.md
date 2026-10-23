@@ -1,5 +1,12 @@
 # Execution ledger — StarForge foundation
 
+- 2026-10-23 (Linux Task 0 publication): User authorized commit/push and confirmed
+  reuse of the existing author identity, configured for this repository only.
+  Fresh lock/lint/type checks and 53 tests passed. Committed implementation as
+  `8299994`, then updated the Task 0 checkbox and handoff after the commit succeeded.
+  SSH remote inspection succeeded and main matched baseline `4027240`; normal
+  push/remote-ref verification is the publication acceptance, not a force push.
+
 - 2026-10-23 (Linux Task 0): User authorized implementation and requested modern
   engineering/dependency/packaging practices. Added typed stdlib host diagnostics
   and `doctor.runtime`, resolving visible cgroup v2 ancestor limits and affinity;

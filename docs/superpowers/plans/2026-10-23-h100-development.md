@@ -19,8 +19,8 @@ C++17、MSVC-compatible x86 ABI、BWAPI 4.4.0、SC1 1.16.1、Wine/Xvfb；不引�
 ## Global Constraints
 
 - 用户提供的硬件为 40 个可见 CPU、314 GiB RAM、1× H100 NVL；先核实 cgroup 和磁盘。
-- 当前没有已验证 native DLL/真实对局/PPO/runner；Linux Task 0 已实现并记录主机/Python 验证，
-  提交待 Git 作者身份配置，其余任务未实现。
+- 当前没有已验证 native DLL/真实对局/PPO/runner；Linux Task 0 已实现、记录主机/Python 验证
+  并独立提交为 `8299994`，其余任务未实现。
 - v1 固定 24 帧/6 宏动作语义保留；v2 单独版本，CLI 新命令均为待实现。
 - `synthetic` 与 `broodwar`、`macro_ppo` 与 `entity_ppo`、时序 profile 分别标识。
 - 只使用合法玩家观测；终局、截断、错误分离；评测固定权重且不训练。
@@ -80,7 +80,7 @@ C++17、MSVC-compatible x86 ABI、BWAPI 4.4.0、SC1 1.16.1、Wine/Xvfb；不引�
 - [x] 文档记录真实发行版适用的依赖准备步骤。不要盲目升级 NVIDIA 驱动；torch 安装时选择官方支持 H100 的 wheel，并单独测 CUDA tensor 运算。
   仅准备隔离开发工具；未安装 torch、未声称 CUDA tensor 验证通过。
 - [x] 运行完整 stdlib suite；记录 G0 主机/Python 证据及 uv/Hatchling 构建、无依赖安装验证。
-- [ ] 为本任务单独 commit。当前 checkout 未配置 Git 作者 name/email，不代替用户设置身份。
+- [x] 为本任务单独 commit：`8299994`。作者身份经用户确认，仅配置当前仓库。
 
 ### Task 1: Wine 游戏与可复现 DLL 构建（G1 的前置）
 

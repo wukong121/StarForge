@@ -4,7 +4,8 @@
 
 This section is direct evidence from the Linux checkout, superseding the older
 Windows-only baseline for the commands listed here. No real game or GPU training
-was run. The source checkout began at `4027240`; Task 0 changes are in the worktree.
+was run. The source checkout began at `4027240`; Task 0 implementation is committed
+as `8299994`.
 
 ### Host and storage
 
@@ -70,8 +71,19 @@ G0's Python/host evidence is available; disk durability remains an explicit
 external unknown and blocks long-run storage decisions, not lightweight fixtures.
 Native compilation/loading, Wine display behavior, game commands/replays,
 automatic match restarts, torch/CUDA tensor operations and all later game/learner
-gates remain unverified. No commit was made: the checkout has no configured Git
-author name/email; no identity or authentication was invented.
+gates remain unverified.
+
+### Publication preflight — 2026-10-23
+
+- User explicitly authorized committing and pushing this milestone, then confirmed
+  reuse of the existing commit author. Set only repository-local Git author fields.
+- Fresh lockfile, Ruff/format and strict mypy checks passed; all 53 stdlib tests
+  passed again in 1.818 seconds.
+- Committed the 14 verified milestone files as `8299994`; ignored environments,
+  tools, build outputs, host evidence and run data were not staged.
+- SSH `ls-remote` succeeded; before publication remote main matched local baseline
+  `4027240`. Origin fetch and push both use the user-specified SSH repository URL.
+  Publication must use a normal push and be checked against actual remote refs.
 
 ## Publication preflight — 2026-10-23
 
