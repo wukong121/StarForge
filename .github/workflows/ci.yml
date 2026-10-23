@@ -1,0 +1,69 @@
+name: Python quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.14"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.13.5"
+          enable-cache: true
+      - name: Restore locked development environment
+        run: uv sync --locked --python ${{ matrix.python }}
+      - name: Check baseline syntax and new-module quality
+        run: |
+          uv run --no-sync ruff check starforge tests
+          uv run --no-sync ruff check --extend-select E4,E7,F,I,UP,B starforge/runtime tests/test_runtime_host.py
+          uv run --no-sync ruff format --check starforge/runtime tests/test_runtime_host.py
+          uv run --no-sync mypy
+      - name: Test without site packages
+        run: uv run --no-sync python -S -m unittest discover -s tests -v
+      - name: Build wheel and source distribution with locked backend
+        run: uv build --no-build-isolation
+      - name: Test installed wheel outside the checkout
+        shell: python
+        run: |
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+          import tempfile
+
+          wheel = next(Path("dist").glob("*.whl")).resolve()
+          with tempfile.TemporaryDirectory() as directory:
+              environment = Path(directory) / "venv"
+              subprocess.run(["uv", "venv", "--python", sys.executable, str(environment)], check=True)
+              subprocess.run(
+                  ["uv", "pip", "install", "--python", str(environment), "--no-deps", str(wheel)],
+                  check=True,
+              )
+              scripts = environment / ("Scripts" if sys.platform == "win32" else "bin")
+              python = scripts / ("python.exe" if sys.platform == "win32" else "python")
+              cli = scripts / ("starforge.exe" if sys.platform == "win32" else "starforge")
+              result = subprocess.run(
+                  [str(python), "-I", "-m", "starforge", "doctor"],
+                  cwd=directory, check=True, capture_output=True, text=True,
+              )
+              assert json.loads(result.stdout)["real_game_validated"] is False
+              subprocess.run(
+                  [str(cli), "smoke", "--episodes", "100", "--eval-episodes", "10",
+                   "--out", str(Path(directory) / "smoke")],
+                  cwd=directory, check=True,
+              )

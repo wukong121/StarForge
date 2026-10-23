@@ -8,7 +8,23 @@
 **Linux H100 接续开发：** 从 [开发交接](docs/handoff-h100.md) 开始阅读，随后查看
 [H100 架构设计](docs/superpowers/specs/2026-10-23-h100-architecture-design.md) 和
 [分阶段实施计划](docs/superpowers/plans/2026-10-23-h100-development.md)。根目录 `AGENTS.md`
-提供 agent 入口。新文档是待执行计划；目前尚无已验证的 Linux 游戏环境或 PPO 实现。
+提供 agent 入口。Linux 主机诊断和 Python 基线已验证；目前尚无已验证的 Linux 游戏环境或 PPO 实现。
+
+## 开发与打包
+
+推荐使用 **uv 0.13.5 + uv.lock** 管理隔离环境和锁定依赖，**Hatchling** 构建 wheel/sdist，
+**Ruff + mypy + unittest** 做质量检查。核心运行时仍无第三方依赖，PyTorch 尚未引入。
+
+```bash
+uv sync --locked --python 3.12
+uv run --no-sync python -m starforge doctor
+uv run --no-sync python -S -m unittest discover -s tests -v
+uv build --no-build-isolation
+```
+
+完整开发、检查、依赖更新和诊断字段说明见 [Linux 开发指南](docs/linux-runtime.md)。
+已配置 Linux/Windows、Python 3.11/3.14 的 CI；当前实际执行证据见
+[验证记录](docs/validation.md)，不要把 CI 配置存在当作已在云端通过。
 
 ## 现在能运行什么
 
@@ -82,6 +98,7 @@ Python 3.11+，核心无需第三方依赖。在项目根目录运行：
 ## 文档
 
 - [H100 开发交接与首次命令](docs/handoff-h100.md)
+- [Linux 开发环境与主机诊断](docs/linux-runtime.md)
 - [H100 架构设计](docs/superpowers/specs/2026-10-23-h100-architecture-design.md)
 - [H100 实施计划](docs/superpowers/plans/2026-10-23-h100-development.md)
 - [设计与长期目标](docs/superpowers/specs/2026-10-22-starforge-design.md)

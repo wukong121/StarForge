@@ -6,4 +6,6 @@ build/
 dist/
 runs/
 .cache/
+.mypy_cache/
+.ruff_cache/
 .superpowers/

@@ -3,7 +3,7 @@
 > **For agentic workers:** Use `superpowers:executing-plans` to implement task-by-task if that
 > skill is available. Otherwise follow the task interfaces and acceptance gates directly.
 > Do not require a specific agent vendor or skill installation to continue. Checkboxes track
-> actual execution, not completion of this document. This session only writes the handoff.
+> actual execution, not completion of this document. Dated execution evidence is in validation.md.
 
 **Goal:** 在已有 H100 Linux 主机上构建可复现的 SC1 对局、采样、PPO 和评测闭环。
 
@@ -19,7 +19,8 @@ C++17、MSVC-compatible x86 ABI、BWAPI 4.4.0、SC1 1.16.1、Wine/Xvfb；不引�
 ## Global Constraints
 
 - 用户提供的硬件为 40 个可见 CPU、314 GiB RAM、1× H100 NVL；先核实 cgroup 和磁盘。
-- 当前没有已验证 native DLL/真实对局/PPO/runner；H100 上的实现尚未开始。
+- 当前没有已验证 native DLL/真实对局/PPO/runner；Linux Task 0 已实现并记录主机/Python 验证，
+  提交待 Git 作者身份配置，其余任务未实现。
 - v1 固定 24 帧/6 宏动作语义保留；v2 单独版本，CLI 新命令均为待实现。
 - `synthetic` 与 `broodwar`、`macro_ppo` 与 `entity_ppo`、时序 profile 分别标识。
 - 只使用合法玩家观测；终局、截断、错误分离；评测固定权重且不训练。
@@ -72,11 +73,14 @@ C++17、MSVC-compatible x86 ABI、BWAPI 4.4.0、SC1 1.16.1、Wine/Xvfb；不引�
 主机、磁盘、cgroup CPU/RAM、GPU、Wine/Xvfb 版本信息；不安装、不修改主机。
 `diagnose()` 保留旧字段，新增 `runtime`；未安装 torch 不导致 doctor 失败。
 
-- [ ] 执行交接文档里的现有命令；记录实际 OS、基线测试和 smoke 结果。检查 CPU quota、memory.max、数据盘持久性与可用空间。
-- [ ] 为缺少 nvidia-smi/Wine、工具超时、cgroup 限额小于 lscpu 编写 fixture 测试：unknown 不能写成 validated，进程失败不崩溃 doctor。
-- [ ] 运行 `python3 -m unittest discover -s tests -p 'test_runtime_host.py' -v`，确认新测试先失败；实现 bounded subprocess 诊断，再运行通过。
-- [ ] 文档记录真实发行版适用的依赖准备步骤。不要盲目升级 NVIDIA 驱动；torch 安装时选择官方支持 H100 的 wheel，并单独测 CUDA tensor 运算。
-- [ ] 运行完整 stdlib suite；G0 通过后记录证据，若是 Git checkout 为本任务单独 commit。
+- [x] 执行交接文档里的现有命令；记录实际 OS、基线测试和 smoke 结果。检查 CPU quota、memory.max、数据盘持久性与可用空间。
+  2026-10-23：记录于 validation；持久性明确为 unknown，未经外部确认不用于长跑。
+- [x] 为缺少 nvidia-smi/Wine、工具超时、cgroup 限额小于 lscpu 编写 fixture 测试：unknown 不能写成 validated，进程失败不崩溃 doctor。
+- [x] 运行 `python3 -m unittest discover -s tests -p 'test_runtime_host.py' -v`，确认新测试先失败；实现 bounded subprocess 诊断，再运行通过。
+- [x] 文档记录真实发行版适用的依赖准备步骤。不要盲目升级 NVIDIA 驱动；torch 安装时选择官方支持 H100 的 wheel，并单独测 CUDA tensor 运算。
+  仅准备隔离开发工具；未安装 torch、未声称 CUDA tensor 验证通过。
+- [x] 运行完整 stdlib suite；记录 G0 主机/Python 证据及 uv/Hatchling 构建、无依赖安装验证。
+- [ ] 为本任务单独 commit。当前 checkout 未配置 Git 作者 name/email，不代替用户设置身份。
 
 ### Task 1: Wine 游戏与可复现 DLL 构建（G1 的前置）
 

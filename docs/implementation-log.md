@@ -1,5 +1,24 @@
 # Execution ledger — StarForge foundation
 
+- 2026-10-23 (Linux Task 0): User authorized implementation and requested modern
+  engineering/dependency/packaging practices. Added typed stdlib host diagnostics
+  and `doctor.runtime`, resolving visible cgroup v2 ancestor limits and affinity;
+  command errors/timeouts remain explicit and never certify game readiness.
+  Tests were RED on the missing runtime module, then GREEN. Preserved v1/Q-learning
+  behavior and zero runtime dependencies.
+- Engineering decision: uv 0.13.5 + committed lockfile, Hatchling wheel/sdist builds,
+  scoped Ruff/strict mypy, existing unittest runner, immutable/read-only CI matrix.
+  No pytest migration, container/orchestration framework, or torch dependency is
+  necessary for this milestone. CI has not run remotely.
+- Bootstrap: pip/ensurepip/uv missing. Used a checksum-verified official uv binary
+  in ignored local tooling; restored `.venv` with uv, without system package changes.
+  Verified the built wheel without dependencies outside the source checkout.
+- Linux hardware and synthetic baseline evidence now exists; see validation.md.
+  Wine/Xvfb/CMake were not on PATH, game/SDK/build assets were not supplied, storage
+  persistence remains unknown. No native build, game, GPU training, remote push,
+  device changes or fabricated launcher commands. Git author identity is absent,
+  so changes remain uncommitted. Next gate is Task 1 assets/build compatibility.
+
 - 2026-10-23 (approved publication retry): Approval service recovered. Configured origin, retaining
   the user's SSH fetch URL; SSH authentication failed, so configured HTTPS push URL for the same repo.
   HTTPS ls-remote succeeded with no remote branches. Selected main for the initial snapshot and reran

@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=68"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
 
 [project]
 name = "starforge-rl"
@@ -13,5 +13,28 @@ dependencies = []
 [project.scripts]
 starforge = "starforge.__main__:main"
 
-[tool.setuptools.packages.find]
-include = ["starforge*"]
+[dependency-groups]
+dev = [
+    "hatchling>=1.27,<2",
+    "mypy>=1.18,<2",
+    "ruff>=0.14,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["starforge"]
+
+[tool.uv]
+required-version = "==0.13.5"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["starforge/runtime"]
+strict = true
+follow_imports = "silent"

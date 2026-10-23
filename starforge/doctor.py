@@ -7,6 +7,8 @@ import shutil
 import struct
 import sys
 
+from .runtime.host import probe_host
+
 
 def windows_machine_codes():
     if sys.platform != "win32":
@@ -59,6 +61,7 @@ def diagnose(starcraft_dir=None):
                 game_files_present=all(present.values()),
                 bwapi_config_present=bool(root and (root / "bwapi-data/bwapi.ini").is_file()),
                 real_game_validated=False, pluto_compatibility="unverified",
+                runtime=probe_host(),
                 recommendation=("ARM development supported; test Prism/BWAPI/Pluto locally or use an x64 game worker."
                                 if architecture["os_architecture"] == "arm64" else
                                 "Validate StarCraft 1.16.1 + BWAPI 4.4.0 before training."))
