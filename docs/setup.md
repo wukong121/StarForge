@@ -25,15 +25,17 @@ ARM Windows 的 Prism 支持 AVX2 仿真不等于上述组合兼容。若步骤 
 ## 3. 编译 Win32 模块
 
 安装 MSVC C++ 桌面工具、Windows SDK、CMake，以及 x86 编译工具。ARM 主机要包含交叉编译工具。
-在开发者终端执行（SDK 路径需按实际位置修改）：
+推荐使用 [可复现构建流程](native-build.md)，在 Windows 仓库根目录执行：
 
 ```powershell
-cmake -S native -B build/native -A Win32 -DBWAPI_ROOT=C:/SDK/BWAPI
-cmake --build build/native --config Release
+./scripts/build-native.ps1
 ```
 
-如果 ARM 主机的默认编译器探测失败，需检查 Visual Studio 的 ARM64-host/x86-target 工具与 CMake
-生成器支持；可使用 x64 Windows 完成 DLL 编译。本次探测失败，尚无可交付 DLL，见验证记录。
+官方 4.4.0 包不提供预编译 `.lib`，脚本先从匹配 SDK 构建 Release/Win32
+`BWAPILIB.lib` 和官方示例，再构建桥接与加载探针；不能直接寻找 `lib/BWAPI.lib`。
+若手动运行 CMake，必须同时指定 SDK 的 `BWAPI_ROOT` 和已构建库的
+`BWAPI_LIBRARY`，具体命令、工具版本及验证边界见上述构建指南。
+Windows 构建、Wine 加载及实际游戏加载是三个独立验收项，当前结果见验证记录。
 
 把构建出的 `StarForge.dll` 放到游戏目录的 `bwapi-data/AI/`，在已有 `bwapi-data/bwapi.ini` 中
 将 AI 路径设为 `bwapi-data/AI/StarForge.dll`，种族设为 Terran。保留配置备份，按官方启动流程加载。
