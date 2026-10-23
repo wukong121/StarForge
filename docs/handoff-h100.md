@@ -1,24 +1,58 @@
 # H100 开发交接
 
 日期：2026-10-23。本文是后续 agent 的入口。Linux Task 0 的主机诊断与 Python 基线
-已落地；这仍不是已完成的游戏部署或训练报告。
+已落地；路径 1 的环境、MSVC 构建与 Wine 模块探针也已通过。这仍不是已完成的
+真实游戏部署或训练报告。
 
-## 最新 Linux 进度
+## 路径 1 最新进度：Task 1 部分完成
+
+- 用户授权尝试官方下载游戏，并明确授权独立分支的 Windows MSVC CI 构建。
+  当前分支 `native/wine-route1`，实现提交 `287aee0`；**没有合并 main**，
+  main 的交接提交仍为 `4cbed7e`。
+- 安装 Ubuntu Wine 9.0 amd64/i386、Xvfb 21.1.12、X11 查询工具、CMake 3.28.3、
+  7-Zip。启用 i386；只更新了七个必要的匹配多架构基础依赖，未删除软件包、
+  未修改 GPU/kernel 包、未升级 NVIDIA 驱动（仍 615.71.10）。
+- 无物理显示器的 Xvfb 响应正常；在一次性 win64 prefix 中，PE32+ x64 和
+  PE32 x86 cmd 都返回精确标记，Win32 Notepad 窗口出现。保留了初始目录、
+  COM/RpcSs bootstrap 错误日志，不能据此声称完整 Windows/游戏兼容。
+- 官方免费安装链接实际返回 Battle.net Setup 2.0.0.4232，**不是 1.16.1 游戏安装**。
+  未使用不明整合包、自动登录或非官方降级。合法的 1.16.1 完整资源仍缺失。
+- 官方 BWAPI 4.4.0 已下载到 Git 外。实测 SDK 不含预编译 `.lib` 或示例 DLL；
+  修正 CMake 的旧假设，先构建同 SDK 的 `BWAPILIB.lib` 再链接。
+- [Windows 原生构建](https://github.com/wukong121/StarForge/actions/runs/39926874158)
+  与 Python CI 矩阵通过。MSVC tools 14.44.35207 构建官方示例、StarForge、
+  StarForgeProbe；PE32/i386、精确导出、正负加载用例通过。
+- 产物 SHA256/来源核验后，在 H100 的 Wine 上实际加载了两个 MSVC DLL，解析入口、
+  `gameInit(nullptr)`、创建/销毁 AIModule 和卸载均通过；三个拒绝用例也通过。
+  **没有调用任何游戏回调、没有启动游戏、没有 replay，G1 未通过。**
+- Wine 探针都只停止自己记录的进程，并移除了临时 prefix。运行证据、包版本、
+  下载/产物实际位置索引在 `runs/route1-20261023T083536Z/`，均被 Git 忽略。
+  SDK、游戏安装器和编译产物均未提交；CI artifact 保留七天，本地另存 Git 外。
+- 外部数据根和持久性尚未确定。已确认一个挂载卷有云厂商数据丢失警告，没有使用
+  或修改它；不自动格式化设备、不启动长跑。系统卷当前约 20 GiB 可用。
+
+**下一步仅缺外部游戏资产才能推进真实验收：**准备合法 1.16.1 完整安装目录，
+包含正确版本的 `StarCraft.exe`、`Storm.dll`、三个 MPQ 和可用地图；实际目录由用户
+提供。先验证官方示例的注入/命令/回放，再接入 StarForge，不能用加载探针替代。
+操作与边界见 [原生构建](native-build.md)、[Linux 指南](linux-runtime.md)、
+[验证记录](validation.md)。
+
+## Task 0 验证与历史交接
 
 - 起点版本 `4027240`；Task 0 实现与工程工具链已独立提交为 `8299994`。
   用户确认沿用已有作者身份，仅配置当前仓库，没有修改全局 Git 设置。
 - 已实现 `runtime.host.probe_host()`，`doctor` 保留旧字段并新增分状态主机诊断。
   覆盖 cgroup v2 父级限额、CPU affinity、内存/磁盘和有超时的外部工具查询。
 - 使用 uv 0.13.5/锁文件、Hatchling、Ruff、mypy；标准库 CLI 和无依赖安装保留。
-  Linux/Windows CI 已配置，但尚无 GitHub 执行结果。
+  Linux/Windows CI 已配置并在 GitHub 通过，后续原生构建结果见上方最新进度。
   此主机 uv 位于忽略目录 `.cache/tools/uv`，未全局安装；新 shell 可直接调用它，
   或临时 `export PATH="$PWD/.cache/tools:$PATH"` 后使用文档中的 uv 命令。
 - 实际核实 Ubuntu 24.04.5、40 CPU、约 314.68 GiB RAM、H100 NVL 95,830 MiB。
   当前可见 cgroup 层级无额外有限 CPU/RAM 配额；不等于保证性能或隐藏父级无限额。
 - 系统盘约 23 GiB 可用；另有挂载数据卷，但持久性未知。训练资产必须先确定
   外部数据根与持久性；未格式化/挂载任何设备。
-- Wine/Xvfb/CMake 未在 PATH；游戏路径、BWAPI SDK/runtime 和可用 MSVC x86
-  构建通路尚未提供。没有真实游戏、DLL 加载或 torch/CUDA 运算证据。
+- Task 0 初始时 Wine/Xvfb/CMake 未在 PATH，游戏与 SDK/构建通路尚未提供。
+  后续环境/构建/模块加载已解决，见上方最新进度；仍没有真实游戏或 torch/CUDA 运算证据。
 - 主机证据：`runs/task0-host-20261023T075145Z/`；基线 smoke：
   `runs/task0-baseline-20261023T074755Z/`，仅 synthetic。运行命令和最终测试结果见
   [验证记录](validation.md)；开发/恢复方法见 [Linux 指南](linux-runtime.md)。
@@ -26,7 +60,7 @@
   安装验证通过；`runs/task0-final-20261023T075708Z/` 的完整 synthetic smoke
   与基线 checkpoint 字节 hash 一致，不代表真实星际技能。
 
-下一步：**Task 1 的真实资产与 ABI 兼容构建通路核实**。Task 0 的实现、验证与提交
+Task 0 时的下一步是 **Task 1 的真实资产与 ABI 兼容构建通路核实**。Task 0 的实现、验证与提交
 已完成；游戏缺失不妨碍随后推进独立协议/runner fixture/PPO 数学测试。
 
 ## 用户意图
@@ -55,8 +89,8 @@
 | RAM | 314 GiB 总内存；无 swap |
 | 虚拟化 | Microsoft hypervisor；操作系统只分配了 40 个 CPU，不能按型号中的 96 核配额计算 |
 
-已核实发行版、可见 cgroup 限额和磁盘容量；sudo、磁盘性能/持久性、网络代理、
-游戏/BWAPI 的实际位置及可用 Windows 构建机仍未确认。`nvidia-smi` 的 CUDA 字段
+已核实发行版、可见 cgroup 限额、磁盘容量，本次 `sudo -n` 成功，BWAPI 与 Windows CI
+构建通路已验证；磁盘性能/持久性、游戏实际目录仍未确认。`nvidia-smi` 的 CUDA 字段
 不证明安装了对应 toolkit 或 PyTorch；不要据此强制安装 CUDA 13.4 或升级驱动。
 
 ## 当前代码实际状态
@@ -70,7 +104,10 @@
   available/unknown/error 状态，不安装工具或导入 torch。
 - `native/StarForge.cpp`：人族混合基线，规则采矿/选址/目标选择；固定 24 帧决策、
   127.0.0.1:8765、5 秒 socket 超时。
-- `native/CMakeLists.txt`：要求 Windows/MSVC/Win32，尚未成功编译；不能直接在 Linux cmake 构建。
+- `native/CMakeLists.txt`：保留 Windows/MSVC/Win32 闸门，匹配 SDK 的 Release
+  BWAPILIB 静态库构建已通过；不在 Linux 用 GCC/MinGW 编译 BWAPI bot DLL。
+- `native/BridgeProbe.cpp`、`scripts/build-native.ps1`、原生 CI：
+  构建、PE/导出和无游戏模块生命周期验证；不是游戏 launcher 或注入验证。
 - 无 PyTorch、PPO、实体网络、runner、自动重开、多 worker、自博弈或已训练星际模型。
 - 2026-10-22 Windows 记录：31 个测试通过；无真实星际对局、无验证过的 DLL。
 - 2026-10-23 Linux 已通过旧 31 测试并完成新增诊断回归；最终数量和命令见验证记录。
@@ -134,9 +171,9 @@ python3 -m starforge smoke --out "runs/handoff-$(date -u +%Y%m%dT%H%M%SZ)"
 ## 从哪里继续
 
 1. 读 [架构设计](superpowers/specs/2026-10-23-h100-architecture-design.md)。
-2. 按 [实施计划](superpowers/plans/2026-10-23-h100-development.md) 查看 Task 0 已记录证据，
-   从 Task 1 继续；先核实实际 Git 状态，不要重复安装或覆盖已存在的本地运行目录。
-3. 下一目标：确认实际游戏/SDK 资产，解决可复现的 Win32 DLL 构建与 Wine/BWAPI Example 运行。
+2. 按 [实施计划](superpowers/plans/2026-10-23-h100-development.md) 查看 Task 0/Task 1
+   已记录证据；先核实当前独立分支，不要重复安装或覆盖已存在的本地运行目录。
+3. 下一目标：获得合法 1.16.1 游戏目录，验证官方 Example 的游戏加载/命令/回放。
 4. 随后交付一场有回放的 StarForge 真实对局，再做 20 局自动重开。
 5. 第一个 GPU 目标是小型 masked PPO 正确性及真实轨迹更新；不是立刻训练 315M 网络。
 
@@ -151,6 +188,6 @@ python3 -m starforge smoke --out "runs/handoff-$(date -u +%Y%m%dT%H%M%SZ)"
 - 真实吞吐与动作延迟，错误和截断数量；若没有真实对局就明确写“未验证”。
 - 当前阻塞的准确环节及还能推进的工作。
 
-当前下一任务：**Task 1，游戏资产与 MSVC-compatible x86 构建通路核实。**
-Task 0 的主机/Python 验证及独立提交已完成；数据盘持久性仍 unknown。
-Task 1–9 的真实游戏/学习验收尚未执行，不能用 Python 测试替代。
+当前下一任务：**Task 1，补齐 1.16.1 游戏资源，验证 Example/StarForge 真实对局。**
+Task 0 已完成；Task 1 的编译与 Windows/Wine 模块加载通过，数据盘持久性仍 unknown。
+Task 1–9 的真实游戏/学习验收尚未执行，不能用 Python/模块探针替代。

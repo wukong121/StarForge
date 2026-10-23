@@ -59,8 +59,11 @@ runtime objects. CMake retains the Windows/MSVC/32-bit guards.
 ## Artifact and verification
 
 The independent `native/wine-route1` branch has a Windows-2022 build workflow.
-It also supports manual dispatch and native-file pull requests. The first build
-is a validation attempt, not an assumed success; see the dated validation record.
+It also supports manual dispatch and native-file pull requests.
+[The build at `287aee0` passed](https://github.com/wukong121/StarForge/actions/runs/39926874158)
+with MSVC tools 14.44.35207, including both positive module probes and all three
+negative probe cases. The downloaded artifact's archive digest and file hashes
+were checked again on the H100 host.
 It does not merge the branch or upload any game assets. Artifacts expire after
 seven days and contain:
 
@@ -86,6 +89,11 @@ StarForgeProbe.exe <absolute-path-to-module.dll>
 PE inspection and the loader probe check different things. Neither demonstrates
 actual BWAPI injection, Game-interface ABI behavior, fog-of-war correctness,
 game commands, terminal classification, or replay validity.
+
+Both DLLs subsequently passed the same probe under Wine 9.0 on the H100 host,
+including argument/file/export rejection cases. This used Wine's builtin CRT,
+not an installed native VC redistributable. Logs and manifest copies are in
+`runs/route1-20261023T083536Z/`; `real_game_validated` remains false.
 
 ## Real-game gate
 

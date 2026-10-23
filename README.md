@@ -3,7 +3,8 @@
 面向《星际争霸：母巢之战》的强化学习 agent 项目，以 **Pluto** 为长期竞技对标。
 
 **当前状态：工程基础版。** 已有可运行的 Python 学习、策略服务、模型保存和评测工具，
-以及待编译/联调的 BWAPI 游戏桥接源码。尚未打过真实星际对局，也没有训练好的竞技模型。
+以及已通过 MSVC 构建、Windows/Wine 模块加载探针的 BWAPI 桥接。
+尚未打过真实星际对局，也没有训练好的竞技模型；模块加载不等于游戏注入/命令验收。
 
 **Linux H100 接续开发：** 从 [开发交接](docs/handoff-h100.md) 开始阅读，随后查看
 [H100 架构设计](docs/superpowers/specs/2026-10-23-h100-architecture-design.md) 和
@@ -55,7 +56,7 @@ Python 3.11+，核心无需第三方依赖。在项目根目录运行：
 | 阶段 | 交付/验收 | 当前状态 |
 |---|---|---|
 | 工程基础 | 协议、masked Q-learning、smoke、JSONL、统计和诊断 | 已实现，见验证记录 |
-| 游戏接入 | 1.16.1 + BWAPI 4.4.0、Win32 桥接、真实对局回放 | 桥接源码已写，编译及实机待验证 |
+| 游戏接入 | 1.16.1 + BWAPI 4.4.0、Win32 桥接、真实对局回放 | MSVC 构建及 Wine 模块加载通过；实际游戏/回放待验证 |
 | 学习能力 | 人族基线 → 实体/空间观测和 recurrent PPO | 设计路线，未实现 |
 | 规模化训练 | 多 worker、同步最新策略自博弈、训练/测试地图隔离；历史池作为后续实验 | 未实现 |
 | Pluto 对标 | 固定模型版本与 SHA256、地图与 matchup、足够局数及置信区间 | 未开始 |
@@ -95,10 +96,15 @@ Python 3.11+，核心无需第三方依赖。在项目根目录运行：
 正式 benchmark 还必须保存双方 DLL/模型哈希、地图哈希、出生位置、比赛规则及回放。
 当前日志提供基础可追溯性，尚不构成完整赛事运行器。
 
+Headless Linux 的 Wine/Xvfb 与 32/64 位执行探针已通过；官方免费链接下载到的是
+当前 Battle.net 安装器，**不是 BWAPI 所需的 1.16.1 安装目录**。真实对局仍缺合法
+兼容资源。构建产物、原生探针及其边界见 [Win32 构建指南](docs/native-build.md)。
+
 ## 文档
 
 - [H100 开发交接与首次命令](docs/handoff-h100.md)
 - [Linux 开发环境与主机诊断](docs/linux-runtime.md)
+- [Win32 构建与加载检查](docs/native-build.md)
 - [H100 架构设计](docs/superpowers/specs/2026-10-23-h100-architecture-design.md)
 - [H100 实施计划](docs/superpowers/plans/2026-10-23-h100-development.md)
 - [设计与长期目标](docs/superpowers/specs/2026-10-22-starforge-design.md)

@@ -1,5 +1,71 @@
 # Validation record — 2026-10-22
 
+## Route 1 / Task 1 prerequisites — 2026-10-23
+
+Status: environment smoke, MSVC build and Wine module probes passed on the
+user-approved independent `native/wine-route1` branch. **No real game has run.**
+
+- User confirmed no game resource is installed/provided, authorized trying the
+  official free download and authorized an independent Windows build branch.
+- Verified the Blizzard 1.18 announcement says the classic game is free. Its
+  linked PC installer request succeeded (HTTP 200) but resolved to current
+  `Battle.net-Setup.exe`, product 2.0.0.4232, 4,700,880 bytes, SHA256
+  `f4643a2086c0cecb1ab68cc601bf38c1a0a6f7ef5914ad03375cc9449385bec6`.
+  This is not a 1.16.1 installation; no compatible game asset or replay is claimed.
+- Installed Wine 9.0~repack-4build3 for amd64/i386, Xvfb
+  2:21.1.12-1ubuntu1.9, xauth/X11 query tools, CMake 3.28.3 and 7-Zip 23.01.
+  Enabled i386; seven matching multiarch runtime dependencies required patch
+  updates, no GPU/kernel updates or package removals. NVIDIA driver still 615.71.10.
+  Slow Azure HTTP downloads were resolved using an operation-local official Ubuntu
+  HTTPS source list, not by disabling signatures or changing system repositories.
+- Xvfb `xdpyinfo` returned a responsive 1024x768 display. A disposable win64 Wine
+  prefix executed the actual PE32+ x64 and PE32 x86 cmd binaries, both exact
+  success markers/exit 0, then showed a Win32 Notepad window. Owned process PIDs
+  were stopped and the prefix removed. Bootstrap COM/RpcSs/initial-directory
+  errors were retained; this limited probe is not a full runtime/game validation.
+- Local evidence: `runs/route1-20261023T083536Z/{host.json,packages.txt,assets.json}`,
+  `wine-probe/{result.json,wineboot.log,windows.txt}`, and the dependency plan.
+  Downloads/SDK are outside Git, indexed by the ignored assets manifest.
+- Official BWAPI 4.4.0 archive SHA256:
+  `e6d1abeff2a9b31886d9ade15c5c783a32f7e973f1f0e7137911f3d083fa72e2`.
+  Its PE32 runtime DLL SHA256:
+  `f2e0f937e9592157656118fa7e5ff30c2327694ed56c1d8f55687972ad97d308`.
+  Runtime imports include Storm.dll, MSVCP140.dll and VCRUNTIME140.dll.
+- Archive inspection confirmed matching headers, BWAPILIB and example source, but
+  **no** BWAPILIB.lib/BWAPI.lib or ExampleAIModule.dll. Corrected the CMake library
+  input and added pinned MSVC build/PE/exports/module-lifetime probes. No Linux
+  cross-compiler or relaxed ABI guard was used.
+- Native implementation commit `287aee0` passed the
+  [Windows build](https://github.com/wukong121/StarForge/actions/runs/39926874158)
+  and [Python CI matrix](https://github.com/wukong121/StarForge/actions/runs/39926873851).
+  MSVC tools 14.44.35207 built Release/Win32 BWAPILIB, official example, StarForge
+  and the probe. Exact exports/PE32 checks, both module lifetimes and three
+  negative probe cases passed on Windows.
+- Downloaded artifact ID `12489358524`, archive SHA256
+  `c4d7e9b108c8f752c4e2d2a14bbea5aa37cdc429f39ce27a5d90ddea715688cc`,
+  matching GitHub metadata. Verified source revision and every manifest file hash.
+  StarForge.dll:
+  `979ceeb2e18e92b04f1c5859ba68f0041260dc4590225c4f4131d1f60fb18126`;
+  ExampleAIModule.dll:
+  `8fda4ca407d1995b5702dafb19aa6b02896ee888bbfc2f3a8cdbf0cbe3ab38dc`.
+- On this H100 host, a new isolated Wine prefix successfully loaded **both**
+  MSVC-built modules, resolved exact entry points, called `gameInit(nullptr)`,
+  created/destroyed AIModule objects, and unloaded. Expected exit codes for
+  missing argument/file/entry points were 1/2/3. No game callbacks or game
+  process were involved. Wine builtin CRT was sufficient for this probe;
+  no native VC runtime or game compatibility is thereby certified.
+  Evidence: `runs/route1-20261023T083536Z/native-wine/result.json`,
+  associated logs and `native-build-manifest.json`. Owned server PID was stopped
+  and the disposable prefix removed.
+  PE inspection, Windows/Wine loading and real BWAPI loading are separate gates.
+- Before that push: `python3 -S -m unittest discover -s tests -v` → **53 passed
+  in 1.826 seconds**; whitespace check passed. Unrelated user editor files were
+  not staged.
+
+G1 remains blocked by a legally available 1.16.1 game directory, actual injection,
+commands and replay. Neither the downloaded Battle.net launcher nor native
+loader-probe success can satisfy it.
+
 ## Linux Task 0 — 2026-10-23
 
 This section is direct evidence from the Linux checkout, superseding the older

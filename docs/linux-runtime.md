@@ -4,7 +4,8 @@
 
 The standard-library baseline works on Python >=3.11. The first Linux milestone
 adds read-only host diagnostics and a reproducible development/build workflow.
-It does not provide a game launcher, PPO, or a validated BWAPI DLL.
+It does not provide a game launcher, PPO, or real-game validation. Subsequent
+MSVC build and Wine module-loading checks are recorded in the route 1 section.
 
 Use the [H100 plan](superpowers/plans/2026-10-23-h100-development.md) for acceptance
 order and [validation](validation.md) for dated evidence. Never copy a Windows
@@ -123,7 +124,67 @@ record only necessary summaries and repository-relative evidence references.
 
 ## Game and long-run prerequisites
 
-Before Task 1, obtain the actual location of legally usable SC1 **1.16.1** assets
+### Route 1 progress on 2026-10-23
+
+The user authorized Wine/Xvfb preparation and an independent Windows CI build
+branch, not a merge to main. Installed distro Wine 9.0 for both amd64/i386,
+Xvfb 21.1.12, X11 query tools, CMake 3.28.3 and 7-Zip. Enabled i386 for Ubuntu
+24.04's shared WoW64 packages; this is not a forced win32-only prefix.
+There is no WineHQ repository or system apt mirror change.
+
+The default Azure mirror was very slow for package downloads. A temporary,
+operation-local source list used the official Ubuntu HTTPS archive, with normal
+Ubuntu signature verification. The Wine install added 136 packages and updated
+seven matching multiarch runtime dependencies (glib/lzma/zlib and their associated
+tools/data); no packages were removed, no GPU/kernel packages were changed, and
+no services were restarted. The earlier display/build-tool install added six
+packages without upgrades. Driver remains 615.71.10.
+
+For another Ubuntu 24.04 machine, simulate the dependency changes first, including
+which installed libraries must match across architectures:
+
+```bash
+sudo dpkg --add-architecture i386
+sudo apt-get update
+sudo apt-get --simulate --no-remove --no-install-recommends install \
+  wine wine64 wine32:i386 xvfb xauth x11-utils cmake 7zip
+```
+
+Install only after inspecting that plan. Do not blindly run a system upgrade,
+install 32-bit NVIDIA drivers, or copy this host's temporary apt configuration.
+
+Actual bounded tests in an isolated, disposable win64 prefix:
+
+- Xvfb answered `xdpyinfo` at 1024x768, without a physical display or TCP listener.
+- The prefix's PE32+/AMD64 `system32/cmd.exe` and PE32/i386 `syswow64/cmd.exe`
+  both returned their exact expected markers, exit 0.
+- A Win32 Notepad window appeared in `xwininfo -root -tree`.
+- A foreground persistent wineserver and Notepad were tracked by their own PIDs,
+  terminated individually, and the disposable prefix was removed afterward.
+- Wine bootstrap logged initial-directory and COM/RpcSs diagnostics. They were
+  retained, not interpreted as proof of a clean/fully compatible Windows runtime.
+  Console/GUI smoke passed; game rendering, injection and commands remain untested.
+
+Evidence: `runs/route1-20261023T083536Z/` contains host/package data, Wine result
+and logs, and an `assets.json` pointing to downloads outside Git. Those outputs
+are ignored and contain no real-game result. A cloud temporary volume's data-loss
+warning was confirmed; it was not used for assets or modified.
+
+The [official Blizzard free-release announcement](https://news.blizzard.com/en-us/article/20674424/starcraft-brood-war-patch-1-18-patch-notes)
+was checked. Its PC download link currently returns **Battle.net Setup
+2.0.0.4232**, not an SC1 1.16.1 installation. The official installer was downloaded
+and identified, not mistaken for the game or an SDK-compatible executable.
+No unofficial game pack, login automation or downgrade was used.
+
+The official BWAPI archive and release source are available outside Git.
+It contains no prebuilt `.lib` or example DLL; see [native build](native-build.md)
+for the pinned MSVC build, module probe, artifact and licensing details.
+That build and the Python CI matrix passed at `287aee0`. Both resulting
+PE32/i386 modules then passed the exact-export/object-lifetime probe on this Wine
+host, using its builtin CRT, without loading the game or invoking game callbacks.
+This is a verified DLL build/load route, not G1 completion.
+
+Before completing Task 1, obtain the actual location of legally usable SC1 **1.16.1** assets
 and the BWAPI **4.4.0** SDK/runtime. The game directory has not been supplied in
 this checkout; this is not proof that no installation exists elsewhere.
 
@@ -132,10 +193,11 @@ Installing GCC/MinGW or removing the CMake platform guard does not prove BWAPI
 C++ ABI compatibility. Native PE/exports/runtime checks and actual in-game loading
 remain separate acceptance steps.
 
-Wine/Xvfb/CMake were not on PATH during this milestone. Choose and document their
-versions and the Wine WoW64/prefix configuration when the real assets/build route
-are known. Do not force all prefixes to win32, invent a game-launch command, or
-change the NVIDIA driver to match the CUDA version displayed by `nvidia-smi`.
+Wine/Xvfb/CMake were absent at Task 0 and are now installed as recorded above.
+Before a real match, use a fresh game prefix and verify the required CRT, game and
+injection behavior. Do not force all prefixes to win32, invent a game-launch
+command, or change the NVIDIA driver to match the CUDA version displayed by
+`nvidia-smi`.
 
 Before storing games, Wine prefixes, checkpoints or replays, the user must choose
 an external `STARFORGE_DATA_ROOT` on a volume whose persistence and capacity are

@@ -1,5 +1,25 @@
 # Execution ledger — StarForge foundation
 
+- 2026-10-23 (route 1 / Task 1 partial): User requested Wine/Xvfb validation and
+  authorized trying the official free game download. Official Blizzard links
+  returned current Battle.net Setup, not a 1.16.1 game. No unofficial pack/login/
+  downgrade was used; real-game/replay acceptance remains blocked.
+- Installed distro Wine amd64/i386, Xvfb, X11 query tools, CMake and 7-Zip with an
+  inspected dependency plan. Only seven required matching multiarch patch updates;
+  NVIDIA/kernel unchanged. Used an operation-local signed Ubuntu HTTPS mirror
+  after slow downloads, not a permanent repository change. Disposable-prefix
+  32/64-bit executable and Win32 GUI probes passed; bootstrap diagnostics retained.
+- User explicitly approved an independent Windows CI branch, not merging main.
+  `native/wine-route1` implementation `287aee0` corrected the SDK/library assumption,
+  built the official example/BWAPILIB and StarForge with MSVC x86, inspected exact
+  exports/PE/imports, and ran positive/negative no-game module probes.
+  Windows native and Python matrix CI passed.
+- Verified downloaded artifact/archive/file hashes and ran the same MSVC modules
+  under Wine on this H100 host. Both module lifetimes and all negative probe cases
+  passed, using Wine builtin CRT. No game callbacks/injection/game were tested.
+  Owned processes/prefixes cleaned; source/licenses/relinking material included in
+  short-lived CI artifacts. Evidence: `runs/route1-20261023T083536Z/`; see validation.
+
 - 2026-10-23 (Linux Task 0 publication): User authorized commit/push and confirmed
   reuse of the existing author identity, configured for this repository only.
   Fresh lock/lint/type checks and 53 tests passed. Committed implementation as

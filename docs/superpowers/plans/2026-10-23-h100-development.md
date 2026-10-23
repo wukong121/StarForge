@@ -19,8 +19,8 @@ C++17、MSVC-compatible x86 ABI、BWAPI 4.4.0、SC1 1.16.1、Wine/Xvfb；不引�
 ## Global Constraints
 
 - 用户提供的硬件为 40 个可见 CPU、314 GiB RAM、1× H100 NVL；先核实 cgroup 和磁盘。
-- 当前没有已验证 native DLL/真实对局/PPO/runner；Linux Task 0 已实现、记录主机/Python 验证
-  并独立提交为 `8299994`，其余任务未实现。
+- 当前没有真实对局/PPO/runner 验收；Linux Task 0 已实现并提交为 `8299994`，
+  Task 1 的 MSVC 构建、Windows/Wine 模块加载已在独立分支通过，但没有游戏/回放验收。
 - v1 固定 24 帧/6 宏动作语义保留；v2 单独版本，CLI 新命令均为待实现。
 - `synthetic` 与 `broodwar`、`macro_ppo` 与 `entity_ppo`、时序 profile 分别标识。
 - 只使用合法玩家观测；终局、截断、错误分离；评测固定权重且不训练。
@@ -85,16 +85,22 @@ C++17、MSVC-compatible x86 ABI、BWAPI 4.4.0、SC1 1.16.1、Wine/Xvfb；不引�
 ### Task 1: Wine 游戏与可复现 DLL 构建（G1 的前置）
 
 **Files:** Create `docs/native-build.md`; Modify `docs/linux-runtime.md`,
-`native/CMakeLists.txt`（只做经过验证的改动），必要时 Create `scripts/build-native.ps1`。
+`native/CMakeLists.txt`（只做经过验证的改动），Create `scripts/build-native.ps1`、
+`native/BridgeProbe.cpp` 和独立 Windows 构建 workflow。
 
 **Interfaces:** 输入实际游戏模板、SDK 和构建工具路径；输出 `StarForge.dll`、
 build manifest（compiler/SDK/runtime versions、source revision、SHA256、PE/exports 报告）。
 DLL 不入 Git，构建脚本不得嵌入用户私有路径。
 
 - [ ] 核实 SC1 1.16.1 和 BWAPI 4.4.0 实际资产路径；缺失时只请求具体缺项，保留日志并推进独立任务。
-- [ ] 先确定 ABI 兼容构建通路。优先现有 Windows MSVC x86；Linux-only 方案需实际加载验证，不能仅将 MSVC 条件放开。
-- [ ] 根据已验证通路记录 exact build commands、PE32/i386、`gameInit`/`newAIModule` 导出、运行库依赖、DLL hash。
+  2026-10-23：BWAPI 已获取；官方免费链接只得到当前 Battle.net 安装器，合法 1.16.1 完整安装目录仍缺。
+- [x] 先确定 ABI 兼容构建通路。优先现有 Windows MSVC x86；Linux-only 方案需实际加载验证，不能仅将 MSVC 条件放开。
+  独立分支 `287aee0`：MSVC tools 14.44.35207、匹配 BWAPILIB，Windows/Wine 模块对象生命周期通过；
+  仍不等于真实 Game-interface ABI/注入验收。
+- [x] 根据已验证通路记录 exact build commands、PE32/i386、`gameInit`/`newAIModule` 导出、运行库依赖、DLL hash。
 - [ ] 在目标 Linux 上验证 Wine（32 位游戏和 64 位 Pluto 进程兼容环境）与 Xvfb；根据选用 Wine 版本确定 prefix/WoW64 方案，不能强制全体 WINEARCH=win32。
+  Wine 9.0 amd64/i386、Xvfb、win64 prefix 的 32/64 位程序及 MSVC 模块加载通过；
+  32 位游戏和 Pluto 推理进程仍未执行，不将此项勾选为已完成。
 - [ ] 用官方 ExampleAIModule 启动游戏，证明确实执行游戏命令；保存 Wine、BWAPI 日志和 replay。
 - [ ] 启动现有 `python3 -m starforge serve --mode train --episodes 1 --timeout 120 --opponent builtin --opponent-version sc1161`，手动/已验证管理器跑一场 StarForge 人族对局并检查终局、动作、replay。
 - [ ] 写入真实命令和哈希；构建通过与运行通过分别标记。此任务无意义不大的编译脚本镜像测试，以实际 ABI/对局验证为验收。
